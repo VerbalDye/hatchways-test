@@ -1,4 +1,6 @@
-const mainEl = document.querySelector("main");
+const mainSectionEl = document.querySelector("main section");
+const nameInputEl = document.getElementById("name");
+var studentResults = [];
 
 const getStudents = () => {
     fetch("https://api.hatchways.io/assessment/students", { headers: { method: "GET" } })
@@ -6,27 +8,31 @@ const getStudents = () => {
             if (response.status == 200) {
                 response.json()
                     .then(data => {
-                        console.log(data.students)
-                        renderStudents(data.students);
+                        console.log(data.students);
+                        studentResults = data.students;
+                        renderStudents(studentResults);
                     })
             }
         })
 }
 
 const renderStudents = studentData => {
+    mainSectionEl.textContent = "";
     
     for (let i = 0; i < studentData.length; i++) {
         let studentEl = document.createElement("article");
 
         studentEl.innerHTML = `
         <img src=${studentData[i].pic}>
-        <h2>${studentData[i].firstName + " " + studentData[i].lastName}</h2>
-        <p>Email: ${studentData[i].email}</p>
-        <p>Company: ${studentData[i].company}</p>
-        <p>Skill: ${studentData[i].skill}</p>
-        <p>Average: ${getAverageGrades(studentData[i].grades)}%</p>
+        <div>
+            <h2>${studentData[i].firstName + " " + studentData[i].lastName}</h2>
+            <p>Email: ${studentData[i].email}</p>
+            <p>Company: ${studentData[i].company}</p>
+            <p>Skill: ${studentData[i].skill}</p>
+            <p>Average: ${getAverageGrades(studentData[i].grades)}%</p>
+        </div>
         `
-        mainEl.appendChild(studentEl);
+        mainSectionEl.appendChild(studentEl);
     }
 }
 
@@ -38,4 +44,20 @@ const getAverageGrades = grades => {
     return total/grades.length;
 }
 
+const filterResults = () => {
+    const inputText = nameInputEl.value.toLowerCase();
+    const searchResults = studentResults.filter(student => {
+        let studentName = student.firstName + " " + student.lastName;
+        if (studentName.toLowerCase().includes(inputText)) {
+            return true;
+        } else {
+            return false;
+        }
+    })
+    renderStudents(searchResults);
+}
+
+
 getStudents();
+
+nameInputEl.addEventListener("input", filterResults)
